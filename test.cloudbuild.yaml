@@ -4,8 +4,8 @@
 # Service : fe-ci-cd-test-cr
 
 substitutions:
-  _REGION: asia-northeast1                       # Cloud Run + Artifact Registry region
-  _AR_HOST: asia-northeast1-docker.pkg.dev       # Artifact Registry host for that region
+  _REGION: asia-southeast1                       # Cloud Run + Artifact Registry region
+  _AR_HOST: asia-southeast1-docker.pkg.dev       # Artifact Registry host for that region
   _AR_REPO: lixil-dev-fe-ar
   _IMAGE_NAME: test-ci-cd
   _SERVICE: fe-ci-cd-test-cr
