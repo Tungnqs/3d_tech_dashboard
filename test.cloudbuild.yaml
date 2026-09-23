@@ -27,6 +27,7 @@ steps:
       - --tag=${_IMAGE}:${COMMIT_SHA}
       - --tag=${_IMAGE}:latest
       - --build-arg=BUILDKIT_INLINE_CACHE=1
+      - --build-arg=ASSET_VERSION=${SHORT_SHA}
       - .
     env:
       - DOCKER_BUILDKIT=1
