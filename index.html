@@ -5,121 +5,309 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tech Pulse 3D</title>
   <meta name="description" content="Interactive 3D technology dashboard built with plain HTML, CSS and JavaScript.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%230016cb'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='monospace' font-size='13' fill='%23fff'%3ETP%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-palette="#3987e5,#d95926,#199e70">
+<body data-palette="#5b74ff,#ef4f00,#22a89c">
 
-  <div class="bg-grid" aria-hidden="true"></div>
-
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <div>
-        <h1>Tech Pulse (version 1.0.0)</h1>
-        <p class="sub">Global technology signal · live</p>
-      </div>
+  <!-- Page loader (removed by script; skipped when reduced motion) -------- -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <span class="loader-mark">TP</span>
+      <span class="loader-count mono" id="loaderCount">000</span>
     </div>
+    <div class="loader-bar"><span id="loaderBar"></span></div>
+    <ul class="loader-list mono" id="loaderList" aria-hidden="true"></ul>
+  </div>
 
-    <div class="filters" role="group" aria-label="Filters">
-      <div class="segmented" role="radiogroup" aria-label="Time range" id="rangeControl">
-        <button type="button" role="radio" aria-checked="false" data-range="24h">24h</button>
-        <button type="button" role="radio" aria-checked="true"  data-range="7d">7d</button>
-        <button type="button" role="radio" aria-checked="false" data-range="30d">30d</button>
-      </div>
-      <label class="select-wrap">
-        <span class="visually-hidden">Technology</span>
-        <select id="techSelect" aria-label="Technology filter">
-          <option value="all">All technologies</option>
-        </select>
-      </label>
+  <!-- Top navigation ------------------------------------------------ -->
+  <header class="nav" id="nav">
+    <a class="wordmark" href="#top" aria-label="Tech Pulse home">
+      <span class="wordmark-box" aria-hidden="true">TP</span>
+      <span class="wordmark-text">Tech Pulse</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#kpis">Overview</a>
+      <a href="#freight">Pipeline</a>
+      <a href="#sphereCard">Network</a>
+      <a href="#barsCard">Adoption</a>
+      <a href="#lineCard">Throughput</a>
+      <a href="#feedCard">Events</a>
+    </nav>
+
+    <div class="nav-right">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="mono soft">Live</span>
+      <div class="clock mono" id="clock" aria-live="off">--:--:--</div>
       <button type="button" class="icon-btn" id="themeToggle" aria-label="Toggle light and dark theme" title="Toggle theme">
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path class="sun" d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14-1.41-1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path class="sun" d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14-1.41-1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       </button>
-      <div class="clock" id="clock" aria-live="off">--:--:--</div>
     </div>
   </header>
 
-  <main class="grid">
+  <main id="top">
 
-    <!-- KPI tiles -->
-    <section class="kpis" aria-label="Key metrics" id="kpis"></section>
-
-    <!-- 3D sphere -->
-    <section class="card card-3d span-2 tall" id="sphereCard">
-      <div class="card-head">
-        <div>
-          <h2>Technology network</h2>
-          <p class="hint">Drag to rotate · hover a node · click to focus</p>
-        </div>
-        <div class="card-actions">
-          <button type="button" class="chip" id="autoRotate" aria-pressed="true">Auto-rotate</button>
-          <button type="button" class="chip" id="resetFocus">Show all</button>
+    <!-- Hero ----------------------------------------------------------- -->
+    <section class="hero" id="hero">
+      <!-- 360° dotted globe: canvas draws land dots, hubs and routes; glow rings are CSS -->
+      <div class="hero-globe" id="heroGlobe">
+        <div class="hero-globe-inner" data-reveal="globe">
+          <div class="globe-glow base" aria-hidden="true"></div>
+          <canvas id="globe" role="img" aria-label="Rotating globe showing data-centre hubs and the routes between them"></canvas>
+          <div class="globe-glow blue" aria-hidden="true"></div>
+          <div class="globe-glow orange" aria-hidden="true"></div>
+          <div class="globe-labels mono" id="globeLabels" aria-hidden="true"></div>
         </div>
       </div>
-      <div class="sphere-wrap">
-        <canvas id="sphere" role="img" aria-label="Rotating 3D network of technology nodes"></canvas>
-        <div class="tooltip" id="sphereTip" role="tooltip" hidden></div>
+
+      <div class="hero-copy">
+        <p class="eyebrow mono" data-reveal="fade-up">One signal <span class="sep">/</span> Global technology dashboard</p>
+        <h1 class="display" data-reveal="lines">
+          <span class="line"><span>One operator</span></span>
+          <span class="line soft"><span>Every layer of the stack</span></span>
+        </h1>
+        <p class="lede" data-reveal="fade-up" style="--d: .35s">We watch the platform. We own the outcome.</p>
+        <div class="cta-row" data-reveal="stagger" style="--d: .45s">
+          <a class="btn btn-primary" href="#sphereCard">Explore the network</a>
+          <a class="btn btn-outline" href="#lineCard">View throughput</a>
+        </div>
       </div>
-      <div class="legend" id="sphereLegend"></div>
+
+      <div class="hero-side">
+        <div class="hero-controls" role="group" aria-label="Filters" data-reveal="fade-up" style="--d: .55s">
+          <p class="mono soft control-label">Filter the dashboard</p>
+          <div class="segmented" role="radiogroup" aria-label="Time range" id="rangeControl">
+            <button type="button" role="radio" aria-checked="false" data-range="24h">24h</button>
+            <button type="button" role="radio" aria-checked="true"  data-range="7d">7d</button>
+            <button type="button" role="radio" aria-checked="false" data-range="30d">30d</button>
+          </div>
+          <label class="select-wrap">
+            <span class="visually-hidden">Technology</span>
+            <select id="techSelect" aria-label="Technology filter">
+              <option value="all">All technologies</option>
+            </select>
+          </label>
+        </div>
+      </div>
     </section>
 
-    <!-- 3D bars -->
-    <section class="card card-3d tall" id="barsCard">
-      <div class="card-head">
-        <div>
-          <h2 id="barsTitle">Adoption index</h2>
-          <p class="hint">Drag to orbit</p>
+    <!-- Ticker --------------------------------------------------------- -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track mono" id="ticker"></div>
+    </div>
+
+    <!-- Stats strip ---------------------------------------------------- -->
+    <section class="stats" aria-label="Key metrics" id="kpis" data-reveal="stats"></section>
+
+    <!-- Freight: pinned, scroll-scrubbed 3D scene ----------------------- -->
+    <section class="freight" id="freight" data-phase="0" aria-label="Deployment pipeline, animated">
+      <div class="freight-stick">
+        <div class="freight-text">
+          <p class="eyebrow mono">01 <span class="sep">/</span> Pipeline</p>
+          <div class="freight-steps">
+            <h2 class="step display-sm is-active" data-step="0">
+              <span class="line"><span>Everything your</span></span>
+              <span class="line"><span>workload needs.</span></span>
+            </h2>
+            <h2 class="step display-sm" data-step="1">
+              <span class="line"><span>Loaded under</span></span>
+              <span class="line"><span>one platform.</span></span>
+            </h2>
+            <h2 class="step display-sm" data-step="2">
+              <span class="line"><span>Shipped. Every</span></span>
+              <span class="line"><span>leg of the journey.</span></span>
+            </h2>
+          </div>
+          <div class="freight-readout mono">
+            <span id="freightLabel">Load</span>
+            <b id="freightValue">000</b>
+            <span id="freightUnit">%</span>
+          </div>
+          <p class="hint">Scroll to drive the scene</p>
         </div>
-        <div class="segmented small" role="radiogroup" aria-label="Bar metric" id="metricControl">
-          <button type="button" role="radio" aria-checked="true"  data-metric="adoption">Adoption</button>
-          <button type="button" role="radio" aria-checked="false" data-metric="investment">Investment</button>
+
+        <div class="freight-stage" id="freightStage">
+          <div class="freight-scene" id="freightScene">
+            <div class="fr-floor" aria-hidden="true"></div>
+            <div class="fr-road" aria-hidden="true"></div>
+
+            <!-- container stack (bottom two stay) -->
+            <div class="obj" style="--x:-270px;--y:0px;--z:0px">
+              <div class="box container white" style="--w:130px;--h:52px;--d:54px"><i class="face front"><span>Network</span></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div>
+            </div>
+            <div class="obj" style="--x:-270px;--y:52px;--z:0px">
+              <div class="box container blue" style="--w:130px;--h:52px;--d:54px"><i class="face front"><span>Storage</span></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div>
+            </div>
+            <!-- the container that gets moved -->
+            <div class="obj" id="frCargo" style="--x:-270px;--y:104px;--z:0px">
+              <div class="box container orange" style="--w:130px;--h:52px;--d:54px"><i class="face front"><span>Compute</span></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div>
+            </div>
+
+            <!-- gantry crane -->
+            <div class="obj" style="--x:-360px;--y:0px;--z:-70px"><div class="box steel" style="--w:14px;--h:250px;--d:14px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+            <div class="obj" style="--x:-360px;--y:0px;--z:70px"><div class="box steel" style="--w:14px;--h:250px;--d:14px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+            <div class="obj" style="--x:300px;--y:0px;--z:-70px"><div class="box steel" style="--w:14px;--h:250px;--d:14px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+            <div class="obj" style="--x:300px;--y:0px;--z:70px"><div class="box steel" style="--w:14px;--h:250px;--d:14px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+            <div class="obj" style="--x:-30px;--y:250px;--z:-70px"><div class="box steel beam" style="--w:690px;--h:16px;--d:14px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+            <div class="obj" style="--x:-30px;--y:250px;--z:70px"><div class="box steel beam" style="--w:690px;--h:16px;--d:14px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+            <!-- trolley rides the beams; cable + spreader hang from it -->
+            <div class="obj" id="frTrolley" style="--x:-270px;--y:266px;--z:0px">
+              <div class="box steel trolley" style="--w:60px;--h:18px;--d:160px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div>
+            </div>
+            <div class="obj" id="frCable" style="--x:-270px;--y:156px;--z:0px">
+              <div class="fr-cable" style="--len:110px"></div>
+            </div>
+            <div class="obj" id="frSpreader" style="--x:-270px;--y:156px;--z:0px">
+              <div class="box steel spreader" style="--w:126px;--h:8px;--d:50px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div>
+            </div>
+
+            <!-- truck: cab + flatbed + wheels; moves as a unit -->
+            <div class="obj" id="frTruck" style="--x:120px;--y:0px;--z:0px">
+              <div class="truck">
+                <div class="obj" style="--x:0px;--y:26px;--z:0px"><div class="box flatbed" style="--w:200px;--h:10px;--d:56px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+                <div class="obj" style="--x:122px;--y:26px;--z:0px"><div class="box cab" style="--w:52px;--h:58px;--d:56px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right window"></i><i class="face top"></i></div></div>
+                <div class="obj" style="--x:0px;--y:14px;--z:0px"><div class="box chassis" style="--w:240px;--h:12px;--d:36px"><i class="face front"></i><i class="face back"></i><i class="face left"></i><i class="face right"></i><i class="face top"></i></div></div>
+                <div class="wheel" style="--x:-70px;--z:30px"></div><div class="wheel" style="--x:-38px;--z:30px"></div><div class="wheel" style="--x:104px;--z:30px"></div>
+                <div class="wheel" style="--x:-70px;--z:-30px"></div><div class="wheel" style="--x:-38px;--z:-30px"></div><div class="wheel" style="--x:104px;--z:-30px"></div>
+              </div>
+            </div>
+
+            <!-- plane: camera-facing silhouette + floor shadow -->
+            <div class="obj" id="frPlaneShadow" style="--x:-700px;--y:1px;--z:-40px"><div class="fr-shadow"></div></div>
+            <div class="obj" id="frPlane" style="--x:-700px;--y:300px;--z:-40px">
+              <svg class="fr-plane" viewBox="0 0 120 40" aria-hidden="true">
+                <path d="M10 17 l11 -13 h11 l-7 13z"/>                       <!-- tail fin -->
+                <path d="M14 22 l-7 7 h11 l5 -7z"/>                          <!-- stabiliser -->
+                <rect x="8" y="17" width="88" height="10" rx="5"/>          <!-- fuselage -->
+                <path d="M96 17 q15 0 20 5 q-5 5 -20 5z"/>                  <!-- nose -->
+                <path d="M50 22 l-16 13 h13 l17 -13z"/>                      <!-- wing -->
+                <rect class="engine" x="44" y="26" width="17" height="6" rx="3"/>
+              </svg>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="bars-stage" id="barsStage">
-        <div class="bars-scene" id="barsScene">
-          <div class="bars-floor" aria-hidden="true"></div>
-          <div class="bars-row" id="barsRow"></div>
-        </div>
-        <div class="tooltip" id="barsTip" role="tooltip" hidden></div>
       </div>
     </section>
 
-    <!-- Line chart -->
-    <section class="card card-3d span-2" id="lineCard">
-      <div class="card-head">
-        <div>
-          <h2 id="lineTitle">Workload throughput</h2>
-          <p class="hint" id="lineHint">Requests per second, last 7 days</p>
+    <!-- Row 1: network + adoption --------------------------------------- -->
+    <div class="panels panels-2-1">
+      <section class="panel tall" id="sphereCard">
+        <div class="panel-head" data-reveal="fade-up">
+          <div>
+            <p class="eyebrow mono">02 <span class="sep">/</span> Network</p>
+            <h2>Technology network</h2>
+          </div>
+          <div class="panel-actions">
+            <p class="hint">Drag to rotate · hover a node · click to focus</p>
+            <button type="button" class="chip" id="autoRotate" aria-pressed="true">Auto-rotate</button>
+            <button type="button" class="chip" id="resetFocus">Show all</button>
+          </div>
         </div>
-        <div class="card-actions">
-          <div class="legend" id="lineLegend"></div>
-          <button type="button" class="chip" id="tableToggle" aria-pressed="false">Table</button>
+        <div class="sphere-wrap" data-reveal="scale">
+          <canvas id="sphere" role="img" aria-label="Rotating 3D network of technology nodes"></canvas>
+          <div class="tooltip" id="sphereTip" role="tooltip" hidden></div>
         </div>
-      </div>
-      <div class="line-wrap" id="lineWrap">
-        <svg id="lineChart" role="img" aria-labelledby="lineTitle"></svg>
-        <div class="tooltip" id="lineTip" role="tooltip" hidden></div>
-      </div>
-      <div class="table-wrap" id="lineTable" hidden></div>
-    </section>
+        <div class="legend mono" id="sphereLegend" data-reveal="fade-up"></div>
+      </section>
 
-    <!-- Event feed -->
-    <section class="card card-3d" id="feedCard">
-      <div class="card-head">
-        <div>
-          <h2>Event stream</h2>
-          <p class="hint">Live status changes</p>
+      <section class="panel tall" id="barsCard">
+        <div class="panel-head" data-reveal="fade-up">
+          <div>
+            <p class="eyebrow mono">03 <span class="sep">/</span> Adoption</p>
+            <h2 id="barsTitle">Adoption index</h2>
+          </div>
+          <div class="panel-actions">
+            <p class="hint">Drag to orbit</p>
+            <div class="segmented small" role="radiogroup" aria-label="Bar metric" id="metricControl">
+              <button type="button" role="radio" aria-checked="true"  data-metric="adoption">Adoption</button>
+              <button type="button" role="radio" aria-checked="false" data-metric="investment">Investment</button>
+            </div>
+          </div>
         </div>
-        <span class="pulse" aria-hidden="true"></span>
-      </div>
-      <ul class="feed" id="feed" aria-live="polite" aria-relevant="additions"></ul>
+        <div class="bars-stage" id="barsStage" data-reveal="bars">
+          <div class="bars-scene" id="barsScene">
+            <div class="bars-floor" aria-hidden="true"></div>
+            <div class="bars-row" id="barsRow"></div>
+          </div>
+          <div class="tooltip" id="barsTip" role="tooltip" hidden></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Row 2: throughput + events -------------------------------------- -->
+    <div class="panels panels-2-1">
+      <section class="panel" id="lineCard">
+        <div class="panel-head" data-reveal="fade-up">
+          <div>
+            <p class="eyebrow mono">04 <span class="sep">/</span> Throughput</p>
+            <h2 id="lineTitle">Workload throughput</h2>
+            <p class="hint" id="lineHint">Requests per second, last 7 days</p>
+          </div>
+          <div class="panel-actions">
+            <div class="legend mono" id="lineLegend"></div>
+            <button type="button" class="chip" id="tableToggle" aria-pressed="false">Table</button>
+          </div>
+        </div>
+        <div class="line-wrap" id="lineWrap" data-reveal="draw">
+          <svg id="lineChart" role="img" aria-labelledby="lineTitle"></svg>
+          <div class="tooltip" id="lineTip" role="tooltip" hidden></div>
+        </div>
+        <div class="table-wrap" id="lineTable" hidden></div>
+      </section>
+
+      <section class="panel" id="feedCard">
+        <div class="panel-head" data-reveal="fade-up">
+          <div>
+            <p class="eyebrow mono">05 <span class="sep">/</span> Events</p>
+            <h2>Event stream</h2>
+            <p class="hint">Live status changes</p>
+          </div>
+          <span class="pulse" aria-hidden="true"></span>
+        </div>
+        <ul class="feed" id="feed" aria-live="polite" aria-relevant="additions" data-reveal="fade-up" style="--d: .15s"></ul>
+      </section>
+    </div>
+
+    <!-- Closing statement ----------------------------------------------- -->
+    <section class="closer">
+      <h2 class="display-sm" data-reveal="lines">
+        <span class="line"><span>Built for platforms</span></span>
+        <span class="line"><span>that can't afford</span></span>
+        <span class="line"><span>disruption.</span></span>
+      </h2>
+      <p class="lede soft" data-reveal="fade-up" style="--d: .3s">One point of contact. Full stack visibility. Fast issue resolution.</p>
     </section>
 
   </main>
 
+  <!-- Footer --------------------------------------------------------------- -->
   <footer class="foot">
-    <span>Sample data, generated locally · no network calls</span>
-    <span id="fps" aria-label="Frame rate"></span>
+    <div class="foot-grid" data-reveal="stagger">
+      <div>
+        <p class="mono soft">Company</p>
+        <p>Tech Pulse<br>Version 1.0.0</p>
+      </div>
+      <div>
+        <p class="mono soft">Operating across</p>
+        <p>Global · APAC · EMEA · Americas</p>
+      </div>
+      <div>
+        <p class="mono soft">Data</p>
+        <p>Sample data, generated locally<br>No network calls</p>
+      </div>
+      <div>
+        <p class="mono soft">Render</p>
+        <p id="fps" aria-label="Frame rate">-- fps</p>
+      </div>
+    </div>
+    <div class="foot-bottom mono soft" data-reveal="fade-up">
+      <span>© 2026 Tech Pulse</span>
+      <span>Interactive 3D dashboard · plain HTML, CSS and JavaScript</span>
+    </div>
   </footer>
 
   <script src="app.js"></script>
